@@ -1,0 +1,25 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+</head>
+<body>
+    <h1>Welcome!! Happy Texting...</h1>
+    <h3> Hi {% if current_user.is_authenticated %}{{ current_user.username }} {% else %} Guest{% endif %}!!</h3>
+        <form action="/chat">
+        <div>
+            <label>enter your username</label>
+            <input type="text" name="username">
+        </div> 
+        <br>
+        <div>
+            <label>enter your room id</label>
+            <input type="number" name="room">
+        </div>
+        <br>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

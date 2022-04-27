@@ -1,0 +1,83 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room</title>
+</head>
+<body>
+    <h1>Welcome to the chat room {{ room }}</h1>
+
+    <div id="messeges"></div>
+    <br>
+    <form id="message_input_form">
+        <input type="text" placeholder="enter your message" id="message_input">
+        <button type="submit">SEND</button>
+    </form>
+
+    <div>
+        
+        <a href="/"><button id="leave" type="submit" >Leave Chat Room</button></a>
+
+    </div>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js" crossorigin="anonymous"></script>
+<script>
+    const socket= io.connect("http://127.0.0.1:5000");
+    socket.on('connect', function(){     // ON the triggering(by default internally) of the 'connect' event i will execute function
+        socket.emit('join_room',{       // emit means create an event 'join_room' and will pass metadata username and roll
+            username:"{{ username }}",
+            room:"{{ room }}"
+        });
+
+        let message_input=document.getElementById('message_input')  // creating a message input html element
+        // when form submission happen below fucntion will start
+        document.getElementById('message_input_form').onsubmit= function(e){ 
+            e.preventDefault();  // preventing GET request with data to the location provided
+            let message=message_input.value.trim();
+            if(message.length)
+                socket.emit('send_message', {
+                    username:"{{ username }}",
+                    room:"{{ room }}",
+                    message: message
+                })
+            message_input.value='';   // making my text field empty
+            message_input.focus();    // placing cursor back on the text field
+        }
+    });
+
+
+    //for leaving the chat room
+    window.onbeforeunload = function () {
+        socket.emit('leave_room', {
+            username: "{{ username }}",
+            room: "{{ room }}"
+        })
+    };
+
+    socket.on('receive_message', function(data){
+        console.log(data);
+        const newNode=document.createElement('div')
+        newNode.innerHTML=`<b>${data.username}:&nbsp;</b> ${data.message}`;
+        document.getElementById('messeges').appendChild(newNode);
+    });
+
+    
+    // to dispaly msg that a user has left the room
+    socket.on('leave_room_announcement', function(data){
+        console.log(data)
+        const newNode = document.createElement('div');
+        newNode.innerHTML = `<b>${data.username}</b> has left the chat room ${data.room}`;
+        document.getElementById('messeges').appendChild(newNode);
+    });
+
+
+    // In this way I am emiting a join_room event...now i have to handle this event
+    socket.on('join_room_announcement', function(data){
+        console.log(data);
+        const newNode=document.createElement('div');
+        newNode.innerHTML=`<b>${data.username}</b> has joined the room`;
+        document.getElementById('messeges').appendChild(newNode);
+    })
+</script>
+</html>
